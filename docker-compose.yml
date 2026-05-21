@@ -1,0 +1,70 @@
+version: '3.8'
+
+services:
+
+  # ─────────────────────────────────────────
+  # Servicio: Base de Datos MySQL
+  # ─────────────────────────────────────────
+  db:
+    image: mysql:8.0
+    container_name: mysql_db
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root_password_seguro}
+      MYSQL_DATABASE: ${DB_NAME:-proyecto_db}
+      MYSQL_USER: ${DB_USER:-app_user}
+      MYSQL_PASSWORD: ${DB_PASSWORD:-app_password_seguro}
+    ports:
+      - "3306:3306"
+    volumes:
+      # Named volume para persistencia de datos (justificación: los datos
+      # sobreviven reinicios del contenedor sin depender de rutas del host)
+      - mysql_data:/var/lib/mysql
+      # Script de inicialización de la BD (se ejecuta una sola vez)
+      - ./init.sql:/docker-entrypoint-initdb.d/01_creacion_base_datos.sql:ro
+    networks:
+      - backend_network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD:-root_password_seguro}"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+
+  # ─────────────────────────────────────────
+  # Servicio: Backend API Node.js
+  # ─────────────────────────────────────────
+  backend:
+    image: ${IMAGE_NAME:-backend-eval2:latest}
+    container_name: backend_app
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - DB_HOST=db
+      - DB_PORT=3306
+      - DB_USER=${DB_USER:-app_user}
+      - DB_PASSWORD=${DB_PASSWORD:-app_password_seguro}
+      - DB_NAME=${DB_NAME:-proyecto_db}
+    depends_on:
+      db:
+        condition: service_healthy  # Espera a que MySQL esté listo
+    networks:
+      - backend_network
+    # Sin volúmenes en el backend: es stateless (el estado vive en la BD)
+
+volumes:
+  mysql_data:
+    driver: local
+    name: innovatech_mysql_data
+
+# ─────────────────────────────────────────
+# Red interna para comunicación Backend ↔ DB
+# Solo el backend accede a la BD, no el exterior
+# ─────────────────────────────────────────
+networks:
+  backend_network:
+    driver: bridge
+    name: innovatech_backend_network
