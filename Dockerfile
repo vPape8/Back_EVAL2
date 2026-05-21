@@ -1,6 +1,6 @@
 # =============================================
 # STAGE 1: Builder
-# Instala TODAS las dependencias (incluye devDependencies)
+# Instala dependencias en un entorno aislado
 # =============================================
 FROM node:18-alpine AS builder
 
@@ -9,8 +9,8 @@ WORKDIR /app
 # Copiar solo archivos de dependencias primero (mejor cache de capas)
 COPY package*.json ./
 
-# Instalar todas las dependencias (incluye nodemon para dev)
-RUN npm ci --include=dev
+# Instalar todas las dependencias
+RUN npm install
 
 # Copiar el código fuente
 COPY . .
@@ -29,7 +29,7 @@ RUN addgroup -S appgroup && adduser -S appuser -G appgroup
 
 WORKDIR /app
 
-# Copiar dependencias de producción desde builder
+# Copiar dependencias desde builder
 COPY --from=builder --chown=appuser:appgroup /app/node_modules ./node_modules
 
 # Copiar código fuente
@@ -53,6 +53,6 @@ ENV NODE_ENV=production \
 HEALTHCHECK --interval=30s --timeout=10s --start-period=20s --retries=3 \
     CMD node -e "require('http').get('http://localhost:3000/api/usuarios', (r) => r.statusCode === 200 ? process.exit(0) : process.exit(1)).on('error', () => process.exit(1))"
 
-# Usar dumb-init como entrypoint para manejo correcto de SIGTERM
+# Usar dumb-init como entrypoint
 ENTRYPOINT ["dumb-init", "--"]
 CMD ["node", "server.js"]
