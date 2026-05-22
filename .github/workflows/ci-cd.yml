@@ -18,7 +18,7 @@ jobs:
 
     steps:
       - name: Checkout del repositorio
-        uses: actions/checkout@v4
+        uses: actions/checkout@v4.2.2
 
       - name: Configurar Docker Buildx
         uses: docker/setup-buildx-action@v3
