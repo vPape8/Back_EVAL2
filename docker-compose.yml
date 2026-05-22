@@ -11,7 +11,7 @@ services:
     restart: unless-stopped
     environment:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root_password_seguro}
-      MYSQL_DATABASE: ${DB_NAME:-db}
+      MYSQL_DATABASE: ${DB_NAME:-proyecto_db}
       MYSQL_USER: ${DB_USER:-app_user}
       MYSQL_PASSWORD: ${DB_PASSWORD:-app_password_seguro}
     ports:
