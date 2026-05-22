@@ -10,10 +10,10 @@ services:
     container_name: mysql_db
     restart: unless-stopped
     environment:
-      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root_password_seguro}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-RootInnovatech2025!}
       MYSQL_DATABASE: ${DB_NAME:-proyecto_db}
       MYSQL_USER: ${DB_USER:-app_user}
-      MYSQL_PASSWORD: ${DB_PASSWORD:-app_password_seguro}
+      MYSQL_PASSWORD: ${DB_PASSWORD:-Innovatech2025!}
     ports:
       - "3306:3306"
     volumes:
