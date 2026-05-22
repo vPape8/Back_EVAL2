@@ -95,11 +95,11 @@ jobs:
               docker pull ${{ secrets.DOCKERHUB_USERNAME }}/backend-eval2:latest
 
               # Bajar stack anterior sin borrar volúmenes
-              docker compose down 2>/dev/null || true
+              docker-compose down 2>/dev/null || true
 
-              # Descargar docker-compose.yml desde el repo
+              # Descargar docker-compose.yml desde el repo (usar la rama que disparó el workflow)
               curl -fsSL \
-                'https://raw.githubusercontent.com/${{ github.repository }}/deploy/docker-compose.yml' \
+                "https://raw.githubusercontent.com/${{ github.repository }}/${{ github.ref_name }}/deploy/docker-compose.yml" \
                 -o docker-compose.yml
 
               # Descargar SQL solo la primera vez
@@ -111,10 +111,10 @@ jobs:
 
               # Levantar stack: Backend + MySQL
               export IMAGE_NAME='${{ secrets.DOCKERHUB_USERNAME }}/backend-eval2:latest'
-              docker compose up -d
+              docker-compose up -d
 
               docker image prune -f
-              docker compose ps
+              docker-compose ps
               "
 
             # Limpiar key temporal
